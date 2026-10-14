@@ -1,0 +1,10 @@
+--- a/flash_fwd_kernel.h
++++ b/flash_fwd_kernel.h
+@@ -1149,7 +1149,6 @@
+     Tensor gLSEaccum = make_tensor(make_gmem_ptr(reinterpret_cast<ElementAccum *>(params.softmax_lseaccum_ptr) + row_offset_lse),
+                                    Shape<Int<kMaxSplits>, Int<kBlockM>>{},
+                                    make_stride(lse_size, _1{}));
+-
+     // LSE format is different depending on params.unpadded_lse and params.seqlenq_ngroups_swapped, see comment in get_lse_tile.
+     // This tensor's layout maps row_offset_lse to {bidb, bidh, q_offset}.
+     Tensor gLSE = make_tensor(make_gmem_ptr(reinterpret_cast<ElementAccum *>(params.softmax_lse_ptr) + row_offset_lse),

@@ -1,0 +1,14 @@
+{
+  "method": "gptq",
+  "group_size": 128,
+  "num_bits": 4,
+  "percdamp": 0.01,
+  "ignore_fc": false,
+  "n_convs": 360,
+  "anchors_per_conv": 16,
+  "anchor_lo_frac": 0.0,
+  "avg_prefix_s": 536.3,
+  "n_blocks": 5760,
+  "calib": "dflash_calib.jsonl",
+  "target_hidden_source": "qwen35-4b-fast-inference (1st place solution weights)"
+}
