@@ -6,16 +6,18 @@ AdaptFM Efficient Qwen Challenge(ICML'26)의 1등팀 솔루션을 재현하고, 
 대회는 A10G(24GB)에서 공식 hidden-set 기준으로 채점됐고 1등팀의 공식 발표 가속배수는
 7.745x입니다. 이 레포의 수치는 그것과 직접 비교 가능한 게 아니라, **로컬 RTX 3090에서
 1등팀 솔루션을 직접 재현한 뒤 그 재현 결과를 베이스라인 삼아 측정한 것**입니다(GPU가
-다르고, 평가 콘텐츠도 대회 공식 스크립트의 filler 프롬프트 문제를 직접 고쳐서 썼습니다 —
-`WRITEUP.md` 2절 참고). 이 기준으로 1등팀 재현 베이스 3.667x를 **4.097x**(약 11.7% 개선)까지
-끌어올렸습니다. 대회 hidden-set 자체를 그대로 재현할 수 없는 상황에서, 적어도 로컬 안에서는
-일관된 기준으로 공정하게 비교할 수 있는 평가 방법론을 직접 세운 것도 이 작업의 일부입니다.
+다르고, 평가 콘텐츠도 대회가 참가자 편의용으로 제공한 filler 기반 테스트 스크립트 대신
+실제 텍스트로 측정했습니다 — `WRITEUP.md` 2절 참고). 이 기준으로 1등팀 재현 베이스
+3.667x를 **4.097x**(약 11.7% 개선)까지 끌어올렸습니다. 대회 hidden-set 자체를 그대로
+재현할 수 없는 상황에서, 적어도 로컬 안에서는 일관된 기준으로 공정하게 비교할 수 있는
+평가 방법론을 직접 세운 것도 이 작업의 일부입니다.
 
 이 과정에서 찾은 버그는 실제로 FlashAttention2 업스트림 라이브러리 자체의 버그였다는 걸
 확인해 [vllm-project/flash-attention#201](https://github.com/vllm-project/flash-attention/pull/201)로
-제출했습니다.
+제출했습니다. 이후 같은 버그를 고치는 PR(#176, #190)이 먼저 올라와 있음을 확인해
+중복으로 닫았고, 해당 수정은 현재 그쪽에서 논의 중입니다.
 
-**전체 과정(동기 → 방법론 → 두 최적화 → 디버깅 → 업스트림 기여)은 [WRITEUP.md](./WRITEUP.md)에
+**전체 과정(동기 → 방법론 → 두 최적화 → 디버깅 → 업스트림 PR 제출)은 [WRITEUP.md](./WRITEUP.md)에
 정리돼 있습니다.** 이 README는 결과/파일 구성 요약입니다.
 
 ---
@@ -57,8 +59,8 @@ AdaptFM Efficient Qwen Challenge(ICML'26)의 1등팀 솔루션을 재현하고, 
 FlashAttention2(`vllm-flash-attn`)에 적용한 로컬 패치. 원본 대비 주석 제외 22줄
 (`flash_api.cpp` 18줄 + `flash_fwd_kernel.h` 4줄)로 long 버킷 기준 어텐션 커널시간
 -74.8% 개선. 이 버그를 업스트림(`vllm-project/flash-attention`)에도 맞게 다듬어 제출한
-버전은 [PR #201](https://github.com/vllm-project/flash-attention/pull/201) 참고(자세한
-경위는 `WRITEUP.md` 8절).
+버전은 [PR #201](https://github.com/vllm-project/flash-attention/pull/201) 참고. 먼저
+올라온 #176·#190과 중복되어 닫았습니다(자세한 경위는 `WRITEUP.md` 8절).
 - **`flash_api.cpp.diff`**: split-KV 활성화 조건을 DFlash 패턴(`max_seqlen_q≤16`)까지
   확장(환경변수 `EQC_SPLIT_KV_MAX_SEQLEN_Q`로 게이팅, 기본값이면 원본과 100% 동일 동작).
 - **`flash_fwd_kernel.h.diff`**: split-KV 활성화 직후 발견된 batch>1 정확성 버그(varlen
@@ -99,4 +101,4 @@ FlashAttention2(`vllm-flash-attn`)에 적용한 로컬 패치. 원본 대비 주
 [Dao-AILab/flash-attention](https://github.com/Dao-AILab/flash-attention)과
 [vllm-project/flash-attention](https://github.com/vllm-project/flash-attention)에도
 있음을 확인해 [#201](https://github.com/vllm-project/flash-attention/pull/201)로 제출했습니다
-(경위는 `WRITEUP.md` 참고).
+(중복으로 닫힘, #176·#190 참고 — 경위는 `WRITEUP.md` 참고).
